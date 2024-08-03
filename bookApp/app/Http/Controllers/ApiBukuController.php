@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use App\Models\Buku;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiExceptionHandler;
@@ -34,12 +35,12 @@ class ApiBukuController extends Controller
         try {
 
             $dataBuku = new Buku;
-            $dataBuku-> coverIMG = $request->coverIMG;
-            $dataBuku-> name = $request->name;
-            $dataBuku-> author = $request->author;
-            $dataBuku-> status = $request->status;
-            $dataBuku-> description = $request->description;
-          
+            $dataBuku->coverIMG = $request->coverIMG;
+            $dataBuku->name = $request->name;
+            $dataBuku->author = $request->author;
+            $dataBuku->status = $request->status;
+            $dataBuku->description = $request->description;
+
             $post = $dataBuku->save();
             return response()->json([
                 'status' => true,
@@ -74,27 +75,50 @@ class ApiBukuController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $buku = Buku::findOrFail($id);
-
-            $request->validate([
-                'coverIMG' => 'string',
-                'name' => 'string',
-                'author' => 'string',
-                'status' => 'string',
-                'description' => 'string',
+            // Temukan buku berdasarkan ID, jika tidak ditemukan akan menghasilkan pengecualian
+            Log::info('Request data');
+            $dataBuku = Buku::find($id);
+            if (empty($dataBuku)) {
+                return response()->json([
+                    "status" => false,
+                    'message' => 'Data Tidak Ditemukan'
+                ], 404);
+            }
+    
+            // Log data yang diterima untuk debugging
+            Log::info('Request data:', $request->all());
+    
+            // Validasi data yang dikirim dalam request
+            $validatedData = $request->validate([
+                'coverIMG' => 'nullable|string',
+                'name' => 'nullable|string',
+                'author' => 'nullable|string',
+                'status' => 'nullable|string',
+                'description' => 'nullable|string',
             ]);
-
-            $buku->update($request->all());
-
+    
+            // Perbarui data buku dengan data yang sudah divalidasi
+            $dataBuku->fill($validatedData);
+            $dataBuku->save();
+    
+            // Log data buku yang sudah diperbarui
+            info('Updated buku:', $dataBuku->toArray());
+            
+            // Kembalikan respons JSON dengan status dan pesan sukses
             return response()->json([
                 'status' => true,
                 'message' => 'Buku berhasil diperbarui',
-                'data' => $buku
+                'data' => $dataBuku
             ], 200);
         } catch (Exception $e) {
+            // Tangani pengecualian menggunakan handler khusus
             return ApiExceptionHandler::handleException($e);
         }
     }
+    
+    
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -126,21 +150,18 @@ class ApiBukuController extends Controller
                     'message' => 'Query tidak boleh kosong'
                 ], 400);
             }
-    
+
             $books = Buku::where('name', 'LIKE', "%{$query}%")
-                         ->orWhere('author', 'LIKE', "%{$query}%")
-                         ->get();
-    
+                ->orWhere('author', 'LIKE', "%{$query}%")
+                ->get();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data ditemukan',
                 'data' => $books
             ], 200);
-    
         } catch (Exception $e) {
             return ApiExceptionHandler::handleException($e);
         }
     }
-    
-    
 }

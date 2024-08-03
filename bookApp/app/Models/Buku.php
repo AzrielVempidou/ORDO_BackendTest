@@ -10,7 +10,7 @@ class Buku extends Model
     use HasFactory;
 
     protected $table = "buku";
-    protected $fileable = [
+    protected $fillable = [
         "coverIMG", 
         "name", 
         "author",
