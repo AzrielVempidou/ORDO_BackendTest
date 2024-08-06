@@ -9,7 +9,7 @@ php artisan serve
 - GET /bukus/{id} - Menampilkan detail buku
 - PUT /bukus/{id} - Mengupdate buku
 - DELETE /bukus/{id} - Menghapus buku
-- GET /bukus/search - Mencari buku berdasarkan nama dan/atau author
+- GET /bukus/search/{} - Mencari buku berdasarkan nama dan/atau author
 
 # API Documentation - Buku Management
 
