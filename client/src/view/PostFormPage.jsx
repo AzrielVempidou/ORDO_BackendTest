@@ -7,7 +7,7 @@ export default function PostFormPage() {
   const [formData, setFormData] = useState({
     name: '',
     author: '',
-    status: '',
+    status: 'Select Status', // Set default value
     description: '',
     coverIMG: null,
   });
@@ -22,6 +22,12 @@ export default function PostFormPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Ensure status is not "Select Status" or empty
+    if (formData.status === 'Select Status' || formData.status === '') {
+      alert('Please select a status.');
+      return;
+    }
 
     const formDataObj = new FormData();
     formDataObj.append('name', formData.name);
@@ -116,7 +122,7 @@ function FormFields({ formData, handleChange }) {
           onChange={handleChange}
           className="flex-1 py-2 border-b-2 border-gray-400 focus:border-green-400 text-gray-600 placeholder-gray-400 outline-none"
         >
-          <option value="" disabled>
+          <option value="Select Status" disabled>
             Select Status
           </option>
           <option value="Published">Published</option>

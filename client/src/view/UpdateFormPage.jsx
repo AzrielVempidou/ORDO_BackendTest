@@ -12,26 +12,30 @@ export default function UpdateFormPage() {
     description: '',
     coverIMG: null,
   });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (id) {
-      const fetchData = async () => {
-        try {
-          const response = await fetch(`http://localhost:8000/bukus/${id}`);
-          const data = await response.json();
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/bukus/${id}`);
+        if (response.ok) {
+          const { data } = await response.json();
+
           setFormData({
             name: data.name || '',
             author: data.author || '',
-            status: data.status || '',
+            status: data.status ? 'Published' : 'Not Published',
             description: data.description || '',
             coverIMG: null,
           });
-        } catch (error) {
-          console.error('Error fetching data:', error);
+        } else {
+          setError('Error fetching data');
         }
-      };
-      fetchData();
-    }
+      } catch (error) {
+        setError('Network Error: ' + error.message);
+      }
+    };
+    fetchData();
   }, [id]);
 
   const handleChange = (e) => {
@@ -44,30 +48,31 @@ export default function UpdateFormPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formDataObj = new FormData();
-    formDataObj.append('name', formData.name);
-    formDataObj.append('author', formData.author);
-    formDataObj.append('status', formData.status);
-    formDataObj.append('description', formData.description);
-    if (formData.coverIMG) {
-      formDataObj.append('coverIMG', formData.coverIMG);
-    }
-
+  
+    const payload = {
+      name: formData.name,
+      author: formData.author,
+      status: formData.status,
+      description: formData.description,
+    };
+  
     try {
       const response = await fetch(`http://localhost:8000/bukus/${id}`, {
         method: 'PUT',
-        body: formDataObj,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
-
+  
+      const result = await response.json();
       if (response.ok) {
         navigate('/');
       } else {
-        const result = await response.json();
-        console.error('Error:', result);
+        setError('Error: ' + (result.message || 'An error occurred'));
       }
     } catch (error) {
-      console.error('Network Error:', error);
+      setError('Network Error: ' + error.message);
     }
   };
 
@@ -78,6 +83,7 @@ export default function UpdateFormPage() {
   return (
     <div className="card-wrapper max-w-full mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-full p-5">
       <div className="bg-white p-10 md:w-3/4 lg:w-1/2 mx-auto">
+        {error && <div className="text-red-500 mb-4">{error}</div>}
         <form onSubmit={handleSubmit}>
           <FormFields formData={formData} handleChange={handleChange} />
           <div className="text-right">

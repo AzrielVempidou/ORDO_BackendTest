@@ -5,9 +5,13 @@ import PropTypes from 'prop-types';
 export default function List({ updateList }) {
   const [books, setBooks] = useState([]);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Fetch books from API or use updateList prop
   const fetchBooks = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const url = search
         ? `http://localhost:8000/bukus/search/${encodeURIComponent(search)}`
@@ -20,13 +24,16 @@ export default function List({ updateList }) {
 
       const contentType = response.headers.get('Content-Type');
       if (contentType && contentType.includes('application/json')) {
-        const data = await response.json();
-        setBooks(data.data);
+        const { data } = await response.json();
+        setBooks(data);
       } else {
         throw new Error('Invalid content type. Expected JSON.');
       }
     } catch (error) {
+      setError('Error fetching books');
       console.error('Error fetching books:', error);
+    } finally {
+      setLoading(false);
     }
   }, [search]);
 
@@ -51,6 +58,7 @@ export default function List({ updateList }) {
         }
         fetchBooks();
       } catch (error) {
+        setError('Error deleting book');
         console.error('Error deleting book:', error);
       }
     }
@@ -96,7 +104,11 @@ export default function List({ updateList }) {
     </div> <br/>
     
     <div className="card-wrapper max-w-full mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-full p-5">
-      {books.length === 0 ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : books.length === 0 ? (
         <p>No books available.</p>
       ) : (
         books.map((book) => (

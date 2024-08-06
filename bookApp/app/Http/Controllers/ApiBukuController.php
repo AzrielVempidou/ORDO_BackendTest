@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use App\Models\Buku;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiExceptionHandler;
@@ -74,8 +75,20 @@ class ApiBukuController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $buku = Buku::findOrFail($id);
-
+            // Temukan buku berdasarkan ID, jika tidak ditemukan akan menghasilkan pengecualian
+            Log::info('Request data');
+            $dataBuku = Buku::find($id);
+            if (empty($dataBuku)) {
+                return response()->json([
+                    "status" => false,
+                    'message' => 'Data Tidak Ditemukan'
+                ], 404);
+            }
+    
+            // Log data yang diterima untuk debugging
+            Log::info('Request data:', $request->all());
+    
+            // Validasi data yang dikirim dalam request
             $validatedData = $request->validate([
                 'coverIMG' => 'nullable|string',
                 'name' => 'nullable|string',
@@ -83,24 +96,27 @@ class ApiBukuController extends Controller
                 'status' => 'nullable|string',
                 'description' => 'nullable|string',
             ]);
-
-
-
-            // Perbarui hanya field yang ada dalam request
-            $buku->update($validatedData);
-
-            // Log the updated data
-            // Log::info('Updated buku:', $buku->toArray());
-
+    
+            // Perbarui data buku dengan data yang sudah divalidasi
+            $dataBuku->fill($validatedData);
+            $dataBuku->save();
+    
+            // Log data buku yang sudah diperbarui
+            info('Updated buku:', $dataBuku->toArray());
+            
+            // Kembalikan respons JSON dengan status dan pesan sukses
             return response()->json([
                 'status' => true,
                 'message' => 'Buku berhasil diperbarui',
-                'data' => $buku
+                'data' => $dataBuku
             ], 200);
         } catch (Exception $e) {
+            // Tangani pengecualian menggunakan handler khusus
             return ApiExceptionHandler::handleException($e);
         }
     }
+    
+    
 
 
 
