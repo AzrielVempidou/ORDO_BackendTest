@@ -32,7 +32,7 @@ export default function List({ updateList }) {
 
   // Effect to update books when updateList changes or search term changes
   useEffect(() => {
-    if (updateList) {
+    if (updateList && updateList.length > 0) {
       setBooks(updateList);
     } else {
       fetchBooks();

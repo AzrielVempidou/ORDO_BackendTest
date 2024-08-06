@@ -1,8 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import HomePage from "../view/HomePage";
 import LayOut from "../view/LayOut";
-import FormPages from "../view/FormPages";
 import DetailPages from "../view/DetailPages";
+import PostFormPage from "../view/PostFormPage";
+import UpdateFormPage from "../view/UpdateFormPage";
 
 const router = createBrowserRouter([
   {
@@ -14,7 +15,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/form",
-        element: <FormPages/>
+        element: <PostFormPage/>
       },
       {
         path: "/detail/:id",
@@ -22,7 +23,7 @@ const router = createBrowserRouter([
       },
       {
         path:"/edit/:id",
-        element: <FormPages/>
+        element: <UpdateFormPage/>
       }
     ]
   },

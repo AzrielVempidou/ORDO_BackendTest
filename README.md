@@ -1,4 +1,10 @@
-jalankan php artisan migrate --seed
+running di client:
+```json
+npm i 
+cd client
+npm run
+```
+jalankan  di server: php artisan migrate --seed
 - **running:** 
 ```
 php artisan serve

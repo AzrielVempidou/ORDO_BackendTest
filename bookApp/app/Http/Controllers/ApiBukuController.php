@@ -34,12 +34,12 @@ class ApiBukuController extends Controller
         try {
 
             $dataBuku = new Buku;
-            $dataBuku-> coverIMG = $request->coverIMG;
-            $dataBuku-> name = $request->name;
-            $dataBuku-> author = $request->author;
-            $dataBuku-> status = $request->status;
-            $dataBuku-> description = $request->description;
-          
+            $dataBuku->coverIMG = $request->coverIMG;
+            $dataBuku->name = $request->name;
+            $dataBuku->author = $request->author;
+            $dataBuku->status = $request->status;
+            $dataBuku->description = $request->description;
+
             $post = $dataBuku->save();
             return response()->json([
                 'status' => true,
@@ -76,15 +76,21 @@ class ApiBukuController extends Controller
         try {
             $buku = Buku::findOrFail($id);
 
-            $request->validate([
-                'coverIMG' => 'string',
-                'name' => 'string',
-                'author' => 'string',
-                'status' => 'string',
-                'description' => 'string',
+            $validatedData = $request->validate([
+                'coverIMG' => 'nullable|string',
+                'name' => 'nullable|string',
+                'author' => 'nullable|string',
+                'status' => 'nullable|string',
+                'description' => 'nullable|string',
             ]);
 
-            $buku->update($request->all());
+
+
+            // Perbarui hanya field yang ada dalam request
+            $buku->update($validatedData);
+
+            // Log the updated data
+            // Log::info('Updated buku:', $buku->toArray());
 
             return response()->json([
                 'status' => true,
@@ -95,6 +101,8 @@ class ApiBukuController extends Controller
             return ApiExceptionHandler::handleException($e);
         }
     }
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -126,21 +134,18 @@ class ApiBukuController extends Controller
                     'message' => 'Query tidak boleh kosong'
                 ], 400);
             }
-    
+
             $books = Buku::where('name', 'LIKE', "%{$query}%")
-                         ->orWhere('author', 'LIKE', "%{$query}%")
-                         ->get();
-    
+                ->orWhere('author', 'LIKE', "%{$query}%")
+                ->get();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data ditemukan',
                 'data' => $books
             ], 200);
-    
         } catch (Exception $e) {
             return ApiExceptionHandler::handleException($e);
         }
     }
-    
-    
 }
